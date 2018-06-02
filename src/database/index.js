@@ -10,9 +10,9 @@ function build (db) {
   }
 }
 
-function connect () {
+function connect (url) {
   return MongoClient
-    .connect('localhost:3000', { promiseLibrary: Promise })
+    .connect(url, { promiseLibrary: Promise })
     .then(build)
 }
 

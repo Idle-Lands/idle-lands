@@ -1,4 +1,4 @@
-const expTable = require('../../models/experience-table')
+const expTable = require('../models/experience-table')
 
 module.exports = experience =>
   expTable.reduce((currentLevel, minimumExp) =>
