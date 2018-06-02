@@ -1,6 +1,6 @@
 module.exports = [
   {
-    id: 'willow-log',
+    uid: 'willow-log',
     name: 'Willow Log',
   },
 ]

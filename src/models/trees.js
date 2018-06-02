@@ -12,9 +12,12 @@ const simplePackage = ({ weight, id, amount }) =>
 
 module.exports = [
   {
-    id: 'willow_tree'
+    uid: 'willow_tree'
     name: 'Willow',
-    chance: 0.1,
+    gather: {
+      time: 3,
+      chance: 0.1,
+    },
     lootPackages: [
       simplePackage({ weight: 120, id: 'willow_log', amount: 1 }),
       simplePackage({ weight: 9, id: 'willow_log', amount: 2 }),

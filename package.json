@@ -3,6 +3,10 @@
     "test": "ava --verbose"
   },
   "dependencies": {
+    "bluebird": "^3.5.1",
+    "bluebird-retry": "^0.11.0",
+    "cuid": "^2.1.1",
+    "mongodb": "^3.0.9",
     "ramda": "^0.25.0"
   },
   "devDependencies": {
