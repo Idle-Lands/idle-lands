@@ -1,4 +1,4 @@
-module.exports = ({ playerUid, resourceUid }) => {
+module.exports = services => ({ playerUid, resourceUid }) => {
   return {
     error: false,
   }

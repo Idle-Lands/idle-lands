@@ -1,6 +1,6 @@
 const cuid = require('cuid')
 
-module.exports = ({ provider, providerPlayerUid }) =>
+module.exports = services => ({ provider, providerPlayerUid }) =>
   ({
     uid: cuid(),
     providers: [
