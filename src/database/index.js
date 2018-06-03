@@ -6,7 +6,7 @@ const dao = require('./dao')
 function build (db) {
   return {
     player: dao.build(db.collection('player')),
-    resources: dao.build(db.collection('resources')),
+    resources: dao.build(db.collection('gatherings')),
   }
 }
 

@@ -4,7 +4,7 @@ module.exports = [
     spots: [
       {
         name: `Polho's Forest`,
-        resources: [
+        gatherables: [
           'willow_tree',
         ],
       },

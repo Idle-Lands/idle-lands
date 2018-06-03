@@ -16,12 +16,16 @@ async function start () {
       providerPlayerUid: req.body.providerPlayerUid,
       database,
     })
-    res.send('Got a POST request')
+      .then(res.send)
   })
 
   app.post('/gatherResource', function (req, res) {
-
-    res.send('Got a POST request')
+    const result = routes.gatherResource({
+      playerUid: req.body.playerUid,
+      gatherableUid: req.body.gatherableUid,
+      database,
+    })
+      .then(res.send)
   })
 }
 
