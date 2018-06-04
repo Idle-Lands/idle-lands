@@ -31,11 +31,11 @@ const attempt = (gatherable, playerUid, now) => {
   }
 }
 
-module.exports = services => ({ playerUid, gatherableUid }) => {
+module.exports = ({ socket, database }) => ({ playerUid, gatherableUid }) => {
   const gatherable = gatherables.find(g => gatherableUid === g.uid)
-  const player = services.database.player(playerUid)
+  const player = database.player(playerUid)
 
-  services.socket.send(JSON.stringify({
+  socket.send(JSON.stringify({
     type: 'gatheringStarted',
   }))
 
@@ -43,9 +43,9 @@ module.exports = services => ({ playerUid, gatherableUid }) => {
   player.intervalId = setInterval(() => {
     const response = attempt(gatherable, playerUid)
     if (response.type === 'gatheringSuccess') {
-      services.database.giveLoot({ playerUid, loot: response.payload.loot })
+      database.giveLoot({ playerUid, loot: response.payload.loot })
     }
-    services.socket.send(JSON.stringify({
+    socket.send(JSON.stringify({
       response,
       player: omit(['intervalId'], player)
     }))

@@ -3,6 +3,10 @@ const db = {
     inventory: [],
     bank: [],
     intervalId: null,
+    coordinates: {
+      x: 1,
+      y: 1,
+    },
   }
 }
 

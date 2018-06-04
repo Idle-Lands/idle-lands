@@ -13,20 +13,17 @@ const socketServer = new WebSocket.Server({ server })
 const database = memoryDb
 
 socketServer.on('connection', socket => {
-
   const boundHandlers = map(
     handler => handler({ database, socket }),
     handlers
   )
-
   socket.on('message', handleSocketMessage(socket, boundHandlers))
-
   socket.send(JSON.stringify({ type: 'connected' }))
 })
 
 const handleSocketMessage = (socket, boundHandlers) => message => {
 
-  const { gatherResource } = boundHandlers
+  const { gatherResource, moveTo } = boundHandlers
 
   let parsed
 
@@ -51,6 +48,27 @@ const handleSocketMessage = (socket, boundHandlers) => message => {
       return gatherResource({
         playerUid,
         gatherableUid,
+      })
+    } catch (e) {
+      console.error(e)
+      socket.send(`Handler exploded. Details: ${e.message}`)
+    }
+  }
+
+  if (parsed.type === 'moveTo') {
+    if (!parsed.payload || !parsed.payload.playerUid || !parsed.payload.x || !parsed.payload.y) {
+      console.error('Invalid payload:', message)
+      socket.send('Invalid payload')
+      return
+    }
+
+    const { x, y, playerUid } = parsed.payload
+
+    try {
+      return moveTo({
+        playerUid,
+        x,
+        y,
       })
     } catch (e) {
       console.error(e)
