@@ -36,7 +36,7 @@ const handleSocketMessage = (socket, boundHandlers) => message => {
   }
 
   if (parsed.type === 'gatherResource') {
-    if (!parsed.payload || !parsed.payload.playerUid || !parsed.payload.gatherableUid) {
+    if (!parsed.payload || !parsed.payload.playerUid) {
       console.error('Invalid payload:', message)
       socket.send('Invalid payload')
       return

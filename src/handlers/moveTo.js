@@ -27,6 +27,7 @@ module.exports = ({ socket, database }) => ({ playerUid, x, y }) => {
         type: 'moveFinished',
         player: omit(['intervalId'], player)
       }))
+      clearInterval(player.intervalId)
       return
     }
 

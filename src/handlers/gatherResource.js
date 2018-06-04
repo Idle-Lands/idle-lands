@@ -1,3 +1,4 @@
+const worldMap = require('../models/worldMap')
 const gatherables = require('../models/gatherables')
 const { pipe, omit } = require('ramda')
 
@@ -31,9 +32,18 @@ const attempt = (gatherable, playerUid, now) => {
   }
 }
 
-module.exports = ({ socket, database }) => ({ playerUid, gatherableUid }) => {
-  const gatherable = gatherables.find(g => gatherableUid === g.uid)
+module.exports = ({ socket, database }) => ({ playerUid }) => {
   const player = database.player(playerUid)
+  const tile = worldMap[player.coordinates.y][player.coordinates.x]
+
+  if (tile.type !== 'gatherable') {
+    socket.send(JSON.stringify({
+      type: 'gatheringInvalid',
+    }))
+    return
+  }
+
+  const gatherable = gatherables.find(g => tile.id === g.uid)
 
   socket.send(JSON.stringify({
     type: 'gatheringStarted',
