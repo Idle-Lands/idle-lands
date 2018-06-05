@@ -1,16 +1,22 @@
-const express = require('express')
-const http = require('http')
-const WebSocket = require('ws')
+const app = require('express')()
+const server = require('http').Server(app)
 const handlers = require('./handlers')
 const memoryDb = require('./memoryDb')
 
+const io = require('socket.io')
+
 const { map } = require('ramda')
 
-const app = express()
-const server = http.createServer(app)
-const socketServer = new WebSocket.Server({ server })
+const socketServer = io(server)
 
 const database = memoryDb()
+
+app.get((req, res, next) => {
+  res.header("Access-Control-Allow-Origin", "*")
+  res.header('Access-Control-Allow-Credentials', true)
+  res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept")
+  next()
+})
 
 socketServer.on('connection', socket => {
   const boundHandlers = map(
@@ -20,6 +26,8 @@ socketServer.on('connection', socket => {
   socket.on('message', handleSocketMessage(socket, boundHandlers))
   socket.send(JSON.stringify({ type: 'connected' }))
 })
+
+server.listen(4000, () => console.log(`Server is up on port ${server.address().port}`))
 
 const handleSocketMessage = (socket, boundHandlers) => message => {
 
@@ -102,4 +110,3 @@ const handleSocketMessage = (socket, boundHandlers) => message => {
 }
 
 
-server.listen(4000, () => console.log(`Server is up on port ${server.address().port}`))

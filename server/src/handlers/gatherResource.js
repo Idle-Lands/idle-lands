@@ -56,8 +56,8 @@ module.exports = ({ socket, database }) => ({ playerUid }) => {
       database.giveLoot({ playerUid, loot: response.payload.loot })
     }
     socket.send(JSON.stringify({
-      type: 'gatheringResult',
-      response,
+      type: response.type,
+      response: omit(['type'], response),
       player: omit(['intervalId'], player)
     }))
   }, gatherable.timeout)

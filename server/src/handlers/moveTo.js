@@ -17,8 +17,6 @@ module.exports = ({ socket, database }) => ({ playerUid, x, y }) => {
 
   const player = database.player(playerUid)
 
-  console.log(player.coordinates.x, player.coordinates.y, x, y, grid)
-
   const path = finder.findPath(player.coordinates.x, player.coordinates.y, x, y, grid.clone())
 
   if (path.length === 0) {
@@ -31,8 +29,6 @@ module.exports = ({ socket, database }) => ({ playerUid, x, y }) => {
   }
 
   let step = 0
-  console.log(path)
-  console.log({ step })
 
   clearInterval(player.intervalId)
   player.intervalId = setInterval(() => {
@@ -42,8 +38,6 @@ module.exports = ({ socket, database }) => ({ playerUid, x, y }) => {
       x: path[step][0],
       y: path[step][1],
     })
-
-    console.log(omit(['intervalId'], player))
 
     if (!path[step + 1]) {
       socket.send(JSON.stringify({
@@ -60,5 +54,5 @@ module.exports = ({ socket, database }) => ({ playerUid, x, y }) => {
     }))
 
     step = step + 1
-  }, 500)
+  }, 300)
 }

@@ -1,0 +1,32 @@
+.app {
+  display: flex;
+}
+
+.map {
+  display: flex;
+  width: calc(64px * 5);
+  flex-wrap: wrap;
+}
+
+.player-info {
+  width: calc(100vw - (64px * 5))
+}
+
+
+.tile {
+  width: 64px;
+  height: 64px;
+}
+
+.tile.wall {
+  background-color: black;
+}
+.tile.bank {
+  background-color: yellow;
+}
+.tile.player {
+  background-color: blue;
+}
+.tile.empty {
+  background-color: green;
+}

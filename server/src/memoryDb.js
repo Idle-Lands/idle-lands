@@ -2,7 +2,7 @@ const { mergeWith, add } = require('ramda')
 
 const db = {
   worms: {
-    inventory: ['willow_log', 'willow_log', 'willow_log'],
+    inventory: [],
     bank: {},
     intervalId: null,
     coordinates: {
