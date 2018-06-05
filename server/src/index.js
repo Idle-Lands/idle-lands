@@ -10,7 +10,7 @@ const app = express()
 const server = http.createServer(app)
 const socketServer = new WebSocket.Server({ server })
 
-const database = memoryDb
+const database = memoryDb()
 
 socketServer.on('connection', socket => {
   const boundHandlers = map(
@@ -23,7 +23,7 @@ socketServer.on('connection', socket => {
 
 const handleSocketMessage = (socket, boundHandlers) => message => {
 
-  const { gatherResource, moveTo } = boundHandlers
+  const { gatherResource, moveTo, bankItems } = boundHandlers
 
   let parsed
 
@@ -53,6 +53,27 @@ const handleSocketMessage = (socket, boundHandlers) => message => {
       console.error(e)
       socket.send(`Handler exploded. Details: ${e.message}`)
     }
+    return
+  }
+
+  if (parsed.type === 'bankItems') {
+    if (!parsed.payload || !parsed.payload.playerUid) {
+      console.error('Invalid payload:', message)
+      socket.send('Invalid payload')
+      return
+    }
+
+    const { playerUid } = parsed.payload
+
+    try {
+      return bankItems({
+        playerUid,
+      })
+    } catch (e) {
+      console.error(e)
+      socket.send(`Handler exploded. Details: ${e.message}`)
+    }
+    return
   }
 
   if (parsed.type === 'moveTo') {
@@ -74,7 +95,10 @@ const handleSocketMessage = (socket, boundHandlers) => message => {
       console.error(e)
       socket.send(`Handler exploded. Details: ${e.message}`)
     }
+    return
   }
+
+  socket.send(`Invalid type. Valid types are: ${Object.keys(boundHandlers).join(', ')}`)
 }
 
 

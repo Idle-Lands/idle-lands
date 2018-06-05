@@ -2,7 +2,7 @@
 const _ = { type: 'empty', block: false }
 const X = { type: 'wall', block: true }
 const W = { type: 'gatherable', id: 'willow_tree', block: false }
-const B = { type: 'building', id: 'bank', block: true }
+const B = { type: 'building', id: 'bank', block: false }
 
 module.exports = [
   [X, X, X, X, X],
