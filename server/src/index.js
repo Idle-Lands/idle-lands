@@ -52,7 +52,11 @@ const handleSocketMessage = socket => message => {
     parsed = JSON.parse(message)
   } catch (e) {
     console.error(e)
-    socket.send(`The JSON parser failed to parse your message. Details: ${e.message}`)
+    socket.send(JSON.stringify({
+      type: 'invalidMessage',
+      error: true,
+      meta: `The JSON parser failed to parse your message. Details: ${e.message}`,
+    }))
     return
   }
 
@@ -65,20 +69,28 @@ const handleSocketMessage = socket => message => {
 
   if(!exists(selectedHandler)) {
     console.error('Invalid route:', message)
-    socket.send('Invalid route')
+    socket.send(JSON.stringify({
+      type: 'invalidMessage',
+      error: true,
+      meta: `Invalid route. Valid routes are: ${routes.join(', ')}`,
+    }))
     return
   }
 
   const missing = complement(has)
 
-  const hasInvalid = (fields, payload) =>
-    find(missing(__, payload), fields)
+  const isInvalid = (payload, fields) =>
+    !payload || find(missing(__, payload), fields)
 
   const { validFields, handler } = selectedHandler
 
-  if (hasInvalid(validFields, parsed.payload)) {
+  if (isInvalid(parsed.payload, validFields)) {
     console.error('Invalid payload:', message)
-    socket.send('Invalid payload')
+    socket.send(JSON.stringify({
+      type: 'invalidMessage',
+      error: true,
+      meta: `Invalid payload. Payload must have: ${validFields.join(', ')}`,
+    }))
     return
   }
 
@@ -88,10 +100,12 @@ const handleSocketMessage = socket => message => {
     return boundHandler(parsed.payload)
   } catch (e) {
     console.error(e)
-    socket.send(`Handler exploded. Details: ${e.message}`)
+    socket.send(JSON.stringify({
+      type: 'invalidMessage',
+      error: true,
+      meta: `Handler exploded. Details: ${e.message}`,
+    }))
   }
-
-  socket.send(`Invalid type. Valid types are: ${Object.keys(boundHandlers).join(', ')}`)
 }
 
 

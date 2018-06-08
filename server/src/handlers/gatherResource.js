@@ -23,17 +23,17 @@ const attempt = (gatherable, playerUid, now) => {
     const loot = pickRandomLoot(gatherable)
     return {
       type: 'updateState',
-      meta: 'Successful attempt.',
       payload: {
-        lastGather: loot,
+        loot,
       }
     }
   }
 
   return {
-    type: 'gatheringFail',
-    meta: 'Failed attempt.',
-    error: true,
+    type: 'updateState',
+    payload: {
+      loot: null,
+    },
   }
 }
 
@@ -56,17 +56,18 @@ module.exports = ({ socket, database }) => ({ playerUid }) => {
   player.intervalId = setInterval(() => {
     const response = attempt(gatherable, playerUid)
 
-    if (!response.error) {
+    if (response.payload.loot) {
       database.giveLoot({ playerUid, loot: response.payload.loot })
     }
 
     socket.send(JSON.stringify(mergeWith(merge,
-      response
+      response,
       {
-        paylod: {
+        payload: {
           player,
         },
       }
     )))
   }, gatherable.timeout)
 }
+

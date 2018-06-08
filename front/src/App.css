@@ -27,6 +27,9 @@
 .tile.player {
   background-color: blue;
 }
-.tile.empty {
+.tile.tree {
   background-color: green;
+}
+.tile.empty {
+  background-color: white;
 }

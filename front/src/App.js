@@ -28,8 +28,10 @@ class App extends Component {
     let parsed
     try {
       parsed = JSON.parse(message)
+      if (parsed.error) { throw new Error(parsed.meta) }
     } catch (e) {
-      console.error(message)
+      console.error(e)
+      return
     }
     console.log('INCOMING:', parsed)
     parsed.type === 'updateState' && this.setState({ ...parsed.payload })
@@ -41,6 +43,12 @@ class App extends Component {
 
     this.setState({ socket })
 
+    const obj = {
+      type: 'fetch',
+      payload: { playerUid: 'worms' }
+    }
+    console.log('SENDING:', obj)
+    socket.send(JSON.stringify(obj))
   }
   send = obj => {
     console.log('SENDING:', obj)
@@ -83,7 +91,7 @@ class App extends Component {
               type: 'gatherResource',
               payload: { playerUid: 'worms' }
             })}
-          >cut tree</button>
+          >gather resource</button>
           <br />
           <button
             onClick={() => this.send({

@@ -17,10 +17,9 @@ module.exports = ({ socket, database }) => ({ playerUid, x, y }) => {
 
   if (path.length === 0) {
     socket.send(JSON.stringify({
-      type: 'updateState',
-      payload: {
-        player: omit(['intervalId'], player),
-      },
+      type: 'pathNotFound',
+      error: true,
+      meta: 'Path not found',
     }))
     clearInterval(player.intervalId)
     return

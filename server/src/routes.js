@@ -15,5 +15,10 @@ module.exports = [
     type: 'bankItems',
     validFields: ['playerUid'],
     handler: handlers.bankItems,
-  }
+  },
+  {
+    type: 'fetch',
+    validFields: ['playerUid'],
+    handler: handlers.fetch,
+  },
 ]
