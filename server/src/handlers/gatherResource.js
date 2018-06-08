@@ -1,6 +1,6 @@
 const worldMap = require('../models/worldMap')
 const gatherables = require('../models/gatherables')
-const { pipe, omit } = require('ramda')
+const { pipe, omit, mergeWith, merge } = require('ramda')
 
 const pickRandomElement = array => array[Math.floor(Math.random() * array.length)]
 
@@ -9,8 +9,9 @@ const expandLootPackages = gatherable =>
     [
       ...lootWheel,
       ...Array.from({ length: package.weight }).map(() => package.loot)
-    ]
-    , [])
+    ],
+    []
+  )
 
 const pickRandomLoot = pipe(
   expandLootPackages,
@@ -19,16 +20,20 @@ const pickRandomLoot = pipe(
 
 const attempt = (gatherable, playerUid, now) => {
   if (Math.random() < gatherable.chance) {
+    const loot = pickRandomLoot(gatherable)
     return {
-      type: 'gatheringSuccess',
+      type: 'updateState',
+      meta: 'Successful attempt.',
       payload: {
-        loot: pickRandomLoot(gatherable),
+        lastGather: loot,
       }
     }
   }
 
   return {
     type: 'gatheringFail',
+    meta: 'Failed attempt.',
+    error: true,
   }
 }
 
@@ -39,26 +44,29 @@ module.exports = ({ socket, database }) => ({ playerUid }) => {
   if (tile.type !== 'gatherable') {
     socket.send(JSON.stringify({
       type: 'gatheringInvalid',
+      meta: 'You are not in a valid gathering field.',
+      error: true,
     }))
     return
   }
 
   const gatherable = gatherables.find(g => tile.id === g.uid)
 
-  socket.send(JSON.stringify({
-    type: 'gatheringStarted',
-  }))
-
   clearInterval(player.intervalId)
   player.intervalId = setInterval(() => {
     const response = attempt(gatherable, playerUid)
-    if (response.type === 'gatheringSuccess') {
+
+    if (!response.error) {
       database.giveLoot({ playerUid, loot: response.payload.loot })
     }
-    socket.send(JSON.stringify({
-      type: response.type,
-      response: omit(['type'], response),
-      player: omit(['intervalId'], player)
-    }))
+
+    socket.send(JSON.stringify(mergeWith(merge,
+      response
+      {
+        paylod: {
+          player,
+        },
+      }
+    )))
   }, gatherable.timeout)
 }

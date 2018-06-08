@@ -32,7 +32,7 @@ class App extends Component {
       console.error(message)
     }
     console.log('INCOMING:', parsed)
-    parsed.player && this.setState({ player: parsed.player }) 
+    parsed.type === 'updateState' && this.setState({ ...parsed.payload })
   }
   componentWillMount () {
     const socket = openSocket('ws://localhost:4000')
