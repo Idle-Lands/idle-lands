@@ -11,18 +11,15 @@ const finder = new pathfinding.AStarFinder()
 
 module.exports = ({ socket, database }) => ({ playerUid, x, y }) => {
 
-  socket.send(JSON.stringify({
-    type: 'moveStarted',
-  }))
-
   const player = database.player(playerUid)
 
   const path = finder.findPath(player.coordinates.x, player.coordinates.y, x, y, grid.clone())
 
   if (path.length === 0) {
     socket.send(JSON.stringify({
-      type: 'moveFinished',
-      player: omit(['intervalId'], player)
+      type: 'pathNotFound',
+      error: true,
+      meta: 'Path not found',
     }))
     clearInterval(player.intervalId)
     return
@@ -41,16 +38,21 @@ module.exports = ({ socket, database }) => ({ playerUid, x, y }) => {
 
     if (!path[step + 1]) {
       socket.send(JSON.stringify({
-        type: 'moveFinished',
-        player: omit(['intervalId'], player)
+        type: 'updateState',
+        meta: 'moveToFinished',
+        payload: {
+          player: omit(['intervalId'], player),
+        },
       }))
       clearInterval(player.intervalId)
       return
     }
 
     socket.send(JSON.stringify({
-      type: 'moveHappened',
-      player: omit(['intervalId'], player)
+      type: 'updateState',
+      payload: {
+        player: omit(['intervalId'], player),
+      },
     }))
 
     step = step + 1

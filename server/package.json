@@ -1,6 +1,6 @@
 {
   "scripts": {
-    "start": "node src/index.js"
+    "start": "nodemon src/index.js"
   },
   "dependencies": {
     "cors": "^2.8.4",
@@ -9,5 +9,8 @@
     "ramda": "^0.25.0",
     "socket.io": "^2.1.1",
     "ws": "^5.2.0"
+  },
+  "devDependencies": {
+    "nodemon": "^1.17.5"
   }
 }

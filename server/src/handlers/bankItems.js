@@ -7,7 +7,9 @@ module.exports = ({ socket, database }) => ({ playerUid }) => {
 
   if (tile.type !== 'building' || tile.id !== 'bank') {
     socket.send(JSON.stringify({
-      type: 'bankFail',
+      type: 'bankInvalid',
+      meta: 'You are not in a valid banking field.',
+      error: true,
     }))
     return
   }
@@ -17,7 +19,9 @@ module.exports = ({ socket, database }) => ({ playerUid }) => {
   database.bankItems({ playerUid })
 
   socket.send(JSON.stringify({
-    type: 'bankSuccess',
-    player: omit(['intervalId'], player),
+    type: 'updateState',
+    payload: {
+      player: omit(['intervalId'], player),
+    }
   }))
 }

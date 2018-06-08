@@ -2,10 +2,28 @@ const app = require('express')()
 const server = require('http').Server(app)
 const handlers = require('./handlers')
 const memoryDb = require('./memoryDb')
+const routes = require('./routes')
 
 const io = require('socket.io')
 
-const { map } = require('ramda')
+const {
+  __,
+  has,
+  head,
+  tap,
+  and,
+  isEmpty,
+  prop,
+  reduce,
+  not,
+  equals,
+  map,
+  isNil,
+  complement,
+  pipe,
+  filter,
+  find,
+} = require('ramda')
 
 const socketServer = io(server)
 
@@ -19,19 +37,14 @@ app.get((req, res, next) => {
 })
 
 socketServer.on('connection', socket => {
-  const boundHandlers = map(
-    handler => handler({ database, socket }),
-    handlers
-  )
-  socket.on('message', handleSocketMessage(socket, boundHandlers))
+  socket.on('message', handleSocketMessage(socket))
   socket.send(JSON.stringify({ type: 'connected' }))
 })
 
 server.listen(4000, () => console.log(`Server is up on port ${server.address().port}`))
 
-const handleSocketMessage = (socket, boundHandlers) => message => {
-
-  const { gatherResource, moveTo, bankItems } = boundHandlers
+const handleSocketMessage = socket => message => {
+  const exists = complement(isNil)
 
   let parsed
 
@@ -39,74 +52,60 @@ const handleSocketMessage = (socket, boundHandlers) => message => {
     parsed = JSON.parse(message)
   } catch (e) {
     console.error(e)
-    socket.send(`The JSON parser failed to parse your message. Details: ${e.message}`)
+    socket.send(JSON.stringify({
+      type: 'invalidMessage',
+      error: true,
+      meta: `The JSON parser failed to parse your message. Details: ${e.message}`,
+    }))
     return
   }
 
-  if (parsed.type === 'gatherResource') {
-    if (!parsed.payload || !parsed.payload.playerUid) {
-      console.error('Invalid payload:', message)
-      socket.send('Invalid payload')
-      return
-    }
+  const matchType = pipe(
+    prop('type'),
+    equals(parsed.type)
+  )
 
-    const { playerUid, gatherableUid } = parsed.payload
+  const selectedHandler = find(matchType, routes)
 
-    try {
-      return gatherResource({
-        playerUid,
-        gatherableUid,
-      })
-    } catch (e) {
-      console.error(e)
-      socket.send(`Handler exploded. Details: ${e.message}`)
-    }
+  if(!exists(selectedHandler)) {
+    console.error('Invalid route:', message)
+    socket.send(JSON.stringify({
+      type: 'invalidMessage',
+      error: true,
+      meta: `Invalid route. Valid routes are: ${routes.join(', ')}`,
+    }))
     return
   }
 
-  if (parsed.type === 'bankItems') {
-    if (!parsed.payload || !parsed.payload.playerUid) {
-      console.error('Invalid payload:', message)
-      socket.send('Invalid payload')
-      return
-    }
+  const missing = complement(has)
 
-    const { playerUid } = parsed.payload
+  const isInvalid = (payload, fields) =>
+    !payload || find(missing(__, payload), fields)
 
-    try {
-      return bankItems({
-        playerUid,
-      })
-    } catch (e) {
-      console.error(e)
-      socket.send(`Handler exploded. Details: ${e.message}`)
-    }
+  const { validFields, handler } = selectedHandler
+
+  if (isInvalid(parsed.payload, validFields)) {
+    console.error('Invalid payload:', message)
+    socket.send(JSON.stringify({
+      type: 'invalidMessage',
+      error: true,
+      meta: `Invalid payload. Payload must have: ${validFields.join(', ')}`,
+    }))
     return
   }
 
-  if (parsed.type === 'moveTo') {
-    if (!parsed.payload || !parsed.payload.playerUid || !parsed.payload.x || !parsed.payload.y) {
-      console.error('Invalid payload:', message)
-      socket.send('Invalid payload')
-      return
-    }
+  const boundHandler = handler({ socket, database })
 
-    const { x, y, playerUid } = parsed.payload
-
-    try {
-      return moveTo({
-        playerUid,
-        x,
-        y,
-      })
-    } catch (e) {
-      console.error(e)
-      socket.send(`Handler exploded. Details: ${e.message}`)
-    }
-    return
+  try {
+    return boundHandler(parsed.payload)
+  } catch (e) {
+    console.error(e)
+    socket.send(JSON.stringify({
+      type: 'invalidMessage',
+      error: true,
+      meta: `Handler exploded. Details: ${e.message}`,
+    }))
   }
-
-  socket.send(`Invalid type. Valid types are: ${Object.keys(boundHandlers).join(', ')}`)
 }
 
 
